@@ -14,9 +14,19 @@ type Lexer struct {
 	currentRune   rune
 	input         string
 	fileName      string
+	fileBased     bool
 }
 
-func New(file *os.File) *Lexer {
+func New(input string) *Lexer {
+	lexer := &Lexer{
+		input:     input,
+		fileBased: false,
+	}
+	lexer.readRune()
+	return lexer
+}
+
+func FromFile(file *os.File) *Lexer {
 	if result, err := io.ReadAll(file); err == nil {
 		lexer := &Lexer{
 			input:         string(result),
@@ -25,6 +35,7 @@ func New(file *os.File) *Lexer {
 			readPosition:  0,
 			currentLine:   1,
 			currentColumn: 1,
+			fileBased:     true,
 		}
 		lexer.readRune()
 		return lexer
