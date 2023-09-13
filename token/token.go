@@ -14,8 +14,13 @@ const (
 	LBRACE    = "{"
 	RBRACE    = "}"
 	FUNCTION  = "FUNCTION"
-	LET       = "LET"
+	DEF       = "DEF"
 )
+
+var keywords = map[string]TokenType{
+	"fun": FUNCTION,
+	"def": DEF,
+}
 
 type TokenType string
 
@@ -33,4 +38,11 @@ func NewToken(tokenType TokenType, ch rune, line, column int) Token {
 		Line:    line,
 		Column:  column,
 	}
+}
+
+func FindKeywordOrIdent(literal string) TokenType {
+	if tok, ok := keywords[literal]; ok {
+		return tok
+	}
+	return IDENT
 }
