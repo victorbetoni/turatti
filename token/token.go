@@ -5,7 +5,7 @@ const (
 	EOF       = "EOF"
 	IDENT     = "IDENT"
 	INT       = "INT"
-	ASSING    = "="
+	ASSIGN    = "="
 	PLUS      = "+"
 	COMMA     = ","
 	SEMICOLON = ";"
@@ -20,9 +20,17 @@ const (
 type TokenType string
 
 type Token struct {
-	Type     TokenType
-	Literal  string
-	FileName string
-	Line     int64
-	Column   int64
+	Type    TokenType
+	Literal string
+	Line    int
+	Column  int
+}
+
+func NewToken(tokenType TokenType, ch rune, line, column int) Token {
+	return Token{
+		Type:    tokenType,
+		Literal: string(ch),
+		Line:    line,
+		Column:  column,
+	}
 }
