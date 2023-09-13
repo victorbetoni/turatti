@@ -6,3 +6,12 @@ def sum = fun(x, y) {
 };
 
 def result = sum(five, ten);
+
+if (5 != 4) {
+    return true;
+} else {
+    return false;
+}
+
+def val = (10 / 4) > 6;
+def vale = 10 < 8; 

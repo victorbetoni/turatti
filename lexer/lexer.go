@@ -57,7 +57,13 @@ func (lexer *Lexer) NextToken() token.Token {
 
 	switch lexer.currentRune {
 	case '=':
-		tok = token.NewToken(token.ASSIGN, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		if lexer.peekChar() == '=' {
+			current := lexer.currentRune
+			lexer.readRune()
+			tok = token.NewComposableToken(token.EQ, current, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		} else {
+			tok = token.NewToken(token.ASSIGN, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		}
 	case ';':
 		tok = token.NewToken(token.SEMICOLON, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
 	case '(':
@@ -67,11 +73,65 @@ func (lexer *Lexer) NextToken() token.Token {
 	case ',':
 		tok = token.NewToken(token.COMMA, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
 	case '+':
-		tok = token.NewToken(token.PLUS, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		if lexer.peekChar() == '=' {
+			current := lexer.currentRune
+			lexer.readRune()
+			tok = token.NewComposableToken(token.PLUS_EQ, current, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		} else {
+			tok = token.NewToken(token.PLUS, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		}
 	case '{':
 		tok = token.NewToken(token.LBRACE, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
 	case '}':
 		tok = token.NewToken(token.RBRACE, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+	case '*':
+		if lexer.peekChar() == '=' {
+			current := lexer.currentRune
+			lexer.readRune()
+			tok = token.NewComposableToken(token.ASTERISK_EQ, current, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		} else {
+			tok = token.NewToken(token.ASTERISK, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		}
+	case '<':
+		if lexer.peekChar() == '=' {
+			current := lexer.currentRune
+			lexer.readRune()
+			tok = token.NewComposableToken(token.LESSEQTHAN, current, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		} else {
+			tok = token.NewToken(token.LESSTHAN, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		}
+	case '>':
+		if lexer.peekChar() == '=' {
+			current := lexer.currentRune
+			lexer.readRune()
+			tok = token.NewComposableToken(token.GREATEREQTHAN, current, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		} else {
+			tok = token.NewToken(token.GREATERTHAN, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		}
+	case '-':
+		if lexer.peekChar() == '=' {
+			current := lexer.currentRune
+			lexer.readRune()
+			tok = token.NewComposableToken(token.MINUS_EQ, current, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		} else {
+			tok = token.NewToken(token.MINUS, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		}
+	case '/':
+		if lexer.peekChar() == '=' {
+			current := lexer.currentRune
+			lexer.readRune()
+			tok = token.NewComposableToken(token.SLASH_EQ, current, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		} else {
+			tok = token.NewToken(token.SLASH, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		}
+	case '!':
+		if lexer.peekChar() == '=' {
+			current := lexer.currentRune
+			lexer.readRune()
+			tok = token.NewComposableToken(token.NOT_EQ, current, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		} else {
+			tok = token.NewToken(token.BANG, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		}
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
@@ -93,6 +153,14 @@ func (lexer *Lexer) NextToken() token.Token {
 
 	lexer.readRune()
 	return tok
+}
+
+func (lexer *Lexer) peekChar() rune {
+	if lexer.readPosition >= len(lexer.input) {
+		return 0
+	} else {
+		return lexer.getRuneAt(lexer.readPosition)
+	}
 }
 
 func (lexer *Lexer) readIdentifier() string {
@@ -123,6 +191,7 @@ func (lexer *Lexer) eatWhitespace() {
 	for lexer.currentRune == ' ' || lexer.currentRune == '\t' || lexer.currentRune == '\r' || lexer.currentRune == '\n' {
 		if lexer.currentRune == '\r' || lexer.currentRune == '\n' {
 			lexer.currentLine++
+			lexer.currentColumn = 1
 		} else {
 			lexer.currentColumn++
 		}
