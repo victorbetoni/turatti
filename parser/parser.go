@@ -111,6 +111,6 @@ func (p *Parser) expectToken(tok token.TokenType) bool {
 }
 
 func (p *Parser) peekError(tok token.TokenType, token token.Token, file string) {
-	p.errors = append(p.errors, fmt.Sprintf("%s: unexpected token at: line %d column %d. expected %s instead.",
-		p.lex.FileName, p.currentToken.Line, p.currentToken.Column, tok))
+	p.errors = append(p.errors, fmt.Sprintf("%s: unexpected token %s at: line %d column %d. expected %s instead.",
+		p.lex.FileName, p.currentToken.Type, p.currentToken.Line, p.currentToken.Column, tok))
 }
