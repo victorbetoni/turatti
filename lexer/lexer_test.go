@@ -50,8 +50,7 @@ func TestNextToken(t *testing.T) {
 		{token.IF, "if"},
 		{token.LPAREN, "("},
 		{token.INT, "5"},
-		{token.BANG, "!"},
-		{token.ASSIGN, "="},
+		{token.NOT_EQ, "!="},
 		{token.INT, "4"},
 		{token.RPAREN, ")"},
 		{token.LBRACE, "{"},
@@ -87,6 +86,12 @@ func TestNextToken(t *testing.T) {
 		{token.INT, "8"},
 		{token.SEMICOLON, ";"},
 
+		{token.DEF, "def"},
+		{token.IDENT, "str"},
+		{token.ASSIGN, "="},
+		{token.STRING, "hello world"},
+		{token.SEMICOLON, ";"},
+
 		{token.EOF, ""},
 	}
 
@@ -95,7 +100,7 @@ func TestNextToken(t *testing.T) {
 		t.Fatalf("couldn't open lexer_test.trt file wrong")
 	}
 
-	lexer := New(file)
+	lexer := FromFile(file)
 
 	for i, tt := range tests {
 		tok := lexer.NextToken()

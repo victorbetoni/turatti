@@ -91,6 +91,12 @@ func (lexer *Lexer) NextToken() token.Token {
 		} else {
 			tok = token.NewToken(token.PLUS, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
 		}
+	case '"':
+		tok.Literal = lexer.readString()
+		tok.Type = token.STRING
+		tok.Column = lexer.currentColumn
+		tok.Line = lexer.currentLine
+		return tok
 	case '{':
 		tok = token.NewToken(token.LBRACE, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
 	case '}':
@@ -172,6 +178,20 @@ func (lexer *Lexer) peekChar() rune {
 	} else {
 		return lexer.getRuneAt(lexer.readPosition)
 	}
+}
+
+func (lexer *Lexer) readString() string {
+	if lexer.peekChar() == '"' || lexer.peekChar() == 0 {
+		return ""
+	}
+	lexer.readRune()
+	pos := lexer.position
+	for lexer.currentRune != '"' {
+		lexer.readRune()
+	}
+	finalPos := lexer.position
+	lexer.readRune()
+	return lexer.input[pos:finalPos]
 }
 
 func (lexer *Lexer) readIdentifier() string {
