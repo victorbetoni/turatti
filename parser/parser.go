@@ -66,6 +66,7 @@ func (p *Parser) parseDefStmt() ast.Statement {
 	stmt.Name = &ast.Identifier{Token: p.currentToken, Value: p.currentToken.Literal}
 
 	if !p.expectToken(token.ASSIGN) {
+		p.peekError(token.ASSIGN, p.peekToken, p.lex.FileName)
 		p.errors = append(p.errors, fmt.Sprintf("%s:%d unexpected token %s at pos %d. expected assign token", p.lex.FileName, p.currentToken.Line, p.currentToken.Column))
 	}
 
@@ -101,4 +102,9 @@ func (p *Parser) expectToken(tok token.TokenType) bool {
 	}
 	return false
 
+}
+
+func (p *Parser) peekError(tok token.TokenType, token token.Token, file string) {
+	p.errors = append(p.errors, fmt.Sprintf("%s: unexpected token at: line %d column %d. expected %s instead.",
+		p.lex.FileName, p.currentToken.Line, p.currentToken.Column, tok))
 }
