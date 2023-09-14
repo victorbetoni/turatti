@@ -20,9 +20,11 @@ type Lexer struct {
 
 func New(input string) *Lexer {
 	lexer := &Lexer{
-		input:     input,
-		fileBased: false,
-		FileName:  "repl",
+		input:         input,
+		fileBased:     false,
+		FileName:      "repl",
+		CurrentColumn: 0,
+		CurrentLine:   1,
 	}
 	lexer.readRune()
 	return lexer
@@ -39,7 +41,7 @@ func FromFile(file *os.File) *Lexer {
 			position:      -1,
 			readPosition:  0,
 			CurrentLine:   1,
-			CurrentColumn: 1,
+			CurrentColumn: 0,
 			fileBased:     true,
 		}
 		lexer.readRune()
@@ -60,10 +62,10 @@ func (lexer *Lexer) readRune() {
 		lexer.currentRune = 0
 	} else {
 		lexer.currentRune = []rune(lexer.input)[lexer.readPosition]
-		lexer.CurrentColumn++
 	}
 	lexer.position = lexer.readPosition
 	lexer.readPosition++
+	lexer.CurrentColumn++
 }
 
 func (lexer *Lexer) NextToken() token.Token {
@@ -161,10 +163,14 @@ func (lexer *Lexer) NextToken() token.Token {
 		tok.Line = lexer.CurrentLine
 	default:
 		if isLetter(lexer.currentRune) {
+			tok.Column = lexer.CurrentColumn
+			tok.Line = lexer.CurrentLine
 			tok.Literal = lexer.readIdentifier()
 			tok.Type = token.FindKeywordOrIdent(tok.Literal)
 			return tok
 		} else if isDigit(lexer.currentRune) {
+			tok.Column = lexer.CurrentColumn
+			tok.Line = lexer.CurrentLine
 			tok.Literal = lexer.readNumber()
 			tok.Type = token.INT
 			return tok
@@ -224,12 +230,10 @@ func isDigit(ch rune) bool {
 }
 
 func (lexer *Lexer) eatWhitespace() {
-	for lexer.currentRune == ' ' || lexer.currentRune == '\t' || lexer.currentRune == '\r' || lexer.currentRune == '\n' {
-		if lexer.currentRune == '\r' || lexer.currentRune == '\n' {
+	for lexer.currentRune == ' ' || lexer.currentRune == '\t' || lexer.currentRune == '\n' {
+		if lexer.currentRune == '\n' {
 			lexer.CurrentLine++
-			lexer.CurrentColumn = 1
-		} else {
-			lexer.CurrentColumn++
+			lexer.CurrentColumn = 0
 		}
 		lexer.readRune()
 	}

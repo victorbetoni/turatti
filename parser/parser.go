@@ -54,9 +54,9 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.DEF:
 		return p.parseDefStmt()
 	case token.IF:
-		return p.parseIfStmt()
+		return nil
 	case token.ELSE:
-		return p.parseDefStmt()
+		return nil
 	default:
 		return nil
 	}
@@ -68,12 +68,14 @@ func (p *Parser) parseDefStmt() ast.Statement {
 
 	if !p.expectToken(token.IDENT) {
 		p.peekError(token.IDENT, p.peekToken, p.lex.FileName)
+		return nil
 	}
 
 	stmt.Name = &ast.Identifier{Token: p.currentToken, Value: p.currentToken.Literal}
 
 	if !p.expectToken(token.ASSIGN) {
 		p.peekError(token.ASSIGN, p.peekToken, p.lex.FileName)
+		return nil
 	}
 
 	p.nextToken()
