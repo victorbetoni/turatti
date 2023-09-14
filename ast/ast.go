@@ -49,3 +49,10 @@ func (ls *DefStatement) statementNode() {}
 func (ls *DefStatement) TokenLiteral() string {
 	return ls.Token.Literal
 }
+
+type IfStatement struct {
+	Token token.Token
+	Value Expression
+}
+
+func (ls *IfStatement) statementNode() {}

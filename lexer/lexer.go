@@ -10,11 +10,11 @@ import (
 type Lexer struct {
 	position      int
 	readPosition  int
-	currentLine   int
-	currentColumn int
+	CurrentLine   int
+	CurrentColumn int
 	currentRune   rune
 	input         string
-	fileName      string
+	FileName      string
 	fileBased     bool
 }
 
@@ -22,6 +22,7 @@ func New(input string) *Lexer {
 	lexer := &Lexer{
 		input:     input,
 		fileBased: false,
+		FileName:  "repl",
 	}
 	lexer.readRune()
 	return lexer
@@ -34,11 +35,11 @@ func FromFile(file *os.File) *Lexer {
 	if result, err := io.ReadAll(file); err == nil {
 		lexer := &Lexer{
 			input:         string(result),
-			fileName:      file.Name(),
+			FileName:      file.Name(),
 			position:      -1,
 			readPosition:  0,
-			currentLine:   1,
-			currentColumn: 1,
+			CurrentLine:   1,
+			CurrentColumn: 1,
 			fileBased:     true,
 		}
 		lexer.readRune()
@@ -59,7 +60,7 @@ func (lexer *Lexer) readRune() {
 		lexer.currentRune = 0
 	} else {
 		lexer.currentRune = []rune(lexer.input)[lexer.readPosition]
-		lexer.currentColumn++
+		lexer.CurrentColumn++
 	}
 	lexer.position = lexer.readPosition
 	lexer.readPosition++
@@ -75,89 +76,89 @@ func (lexer *Lexer) NextToken() token.Token {
 		if lexer.peekChar() == '=' {
 			current := lexer.currentRune
 			lexer.readRune()
-			tok = token.NewComposableToken(token.EQ, current, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+			tok = token.NewComposableToken(token.EQ, current, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 		} else {
-			tok = token.NewToken(token.ASSIGN, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+			tok = token.NewToken(token.ASSIGN, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 		}
 	case ';':
-		tok = token.NewToken(token.SEMICOLON, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		tok = token.NewToken(token.SEMICOLON, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 	case '(':
-		tok = token.NewToken(token.LPAREN, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		tok = token.NewToken(token.LPAREN, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 	case ')':
-		tok = token.NewToken(token.RPAREN, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		tok = token.NewToken(token.RPAREN, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 	case ',':
-		tok = token.NewToken(token.COMMA, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		tok = token.NewToken(token.COMMA, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 	case '+':
 		if lexer.peekChar() == '=' {
 			current := lexer.currentRune
 			lexer.readRune()
-			tok = token.NewComposableToken(token.PLUS_EQ, current, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+			tok = token.NewComposableToken(token.PLUS_EQ, current, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 		} else {
-			tok = token.NewToken(token.PLUS, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+			tok = token.NewToken(token.PLUS, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 		}
 	case '"':
 		tok.Literal = lexer.readString()
 		tok.Type = token.STRING
-		tok.Column = lexer.currentColumn
-		tok.Line = lexer.currentLine
+		tok.Column = lexer.CurrentColumn
+		tok.Line = lexer.CurrentLine
 		return tok
 	case '{':
-		tok = token.NewToken(token.LBRACE, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		tok = token.NewToken(token.LBRACE, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 	case '}':
-		tok = token.NewToken(token.RBRACE, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+		tok = token.NewToken(token.RBRACE, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 	case '*':
 		if lexer.peekChar() == '=' {
 			current := lexer.currentRune
 			lexer.readRune()
-			tok = token.NewComposableToken(token.ASTERISK_EQ, current, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+			tok = token.NewComposableToken(token.ASTERISK_EQ, current, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 		} else {
-			tok = token.NewToken(token.ASTERISK, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+			tok = token.NewToken(token.ASTERISK, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 		}
 	case '<':
 		if lexer.peekChar() == '=' {
 			current := lexer.currentRune
 			lexer.readRune()
-			tok = token.NewComposableToken(token.LESSEQTHAN, current, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+			tok = token.NewComposableToken(token.LESSEQTHAN, current, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 		} else {
-			tok = token.NewToken(token.LESSTHAN, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+			tok = token.NewToken(token.LESSTHAN, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 		}
 	case '>':
 		if lexer.peekChar() == '=' {
 			current := lexer.currentRune
 			lexer.readRune()
-			tok = token.NewComposableToken(token.GREATEREQTHAN, current, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+			tok = token.NewComposableToken(token.GREATEREQTHAN, current, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 		} else {
-			tok = token.NewToken(token.GREATERTHAN, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+			tok = token.NewToken(token.GREATERTHAN, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 		}
 	case '-':
 		if lexer.peekChar() == '=' {
 			current := lexer.currentRune
 			lexer.readRune()
-			tok = token.NewComposableToken(token.MINUS_EQ, current, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+			tok = token.NewComposableToken(token.MINUS_EQ, current, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 		} else {
-			tok = token.NewToken(token.MINUS, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+			tok = token.NewToken(token.MINUS, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 		}
 	case '/':
 		if lexer.peekChar() == '=' {
 			current := lexer.currentRune
 			lexer.readRune()
-			tok = token.NewComposableToken(token.SLASH_EQ, current, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+			tok = token.NewComposableToken(token.SLASH_EQ, current, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 		} else {
-			tok = token.NewToken(token.SLASH, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+			tok = token.NewToken(token.SLASH, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 		}
 	case '!':
 		if lexer.peekChar() == '=' {
 			current := lexer.currentRune
 			lexer.readRune()
-			tok = token.NewComposableToken(token.NOT_EQ, current, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+			tok = token.NewComposableToken(token.NOT_EQ, current, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 		} else {
-			tok = token.NewToken(token.BANG, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+			tok = token.NewToken(token.BANG, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 		}
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
-		tok.Column = lexer.currentColumn
-		tok.Line = lexer.currentLine
+		tok.Column = lexer.CurrentColumn
+		tok.Line = lexer.CurrentLine
 	default:
 		if isLetter(lexer.currentRune) {
 			tok.Literal = lexer.readIdentifier()
@@ -168,7 +169,7 @@ func (lexer *Lexer) NextToken() token.Token {
 			tok.Type = token.INT
 			return tok
 		} else {
-			tok = token.NewToken(token.ILLEGAL, lexer.currentRune, lexer.currentLine, lexer.currentColumn)
+			tok = token.NewToken(token.ILLEGAL, lexer.currentRune, lexer.CurrentLine, lexer.CurrentColumn)
 		}
 	}
 
@@ -225,10 +226,10 @@ func isDigit(ch rune) bool {
 func (lexer *Lexer) eatWhitespace() {
 	for lexer.currentRune == ' ' || lexer.currentRune == '\t' || lexer.currentRune == '\r' || lexer.currentRune == '\n' {
 		if lexer.currentRune == '\r' || lexer.currentRune == '\n' {
-			lexer.currentLine++
-			lexer.currentColumn = 1
+			lexer.CurrentLine++
+			lexer.CurrentColumn = 1
 		} else {
-			lexer.currentColumn++
+			lexer.CurrentColumn++
 		}
 		lexer.readRune()
 	}

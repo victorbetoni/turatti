@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"turatti/ast"
 	"turatti/lexer"
 	"turatti/token"
@@ -10,6 +11,7 @@ type Parser struct {
 	lex          *lexer.Lexer
 	currentToken token.Token
 	peekToken    token.Token
+	errors       []string
 }
 
 func (p *Parser) nextToken() {
@@ -25,5 +27,78 @@ func New(lex *lexer.Lexer) *Parser {
 }
 
 func (p *Parser) Parse() *ast.Program {
+	program := &ast.Program{
+		Statements: []ast.Statement{},
+	}
+
+	for p.currentToken.Type != token.EOF {
+		stmt := p.parseStatement()
+		if stmt != nil {
+			program.Statements = append(program.Statements, stmt)
+		}
+		p.nextToken()
+	}
+
+	return program
+}
+
+func (p *Parser) parseStatement() ast.Statement {
+	switch p.currentToken.Type {
+	case token.DEF:
+		return p.parseDefStmt()
+	case token.IF:
+		return p.parseIfStmt()
+	case token.ELSE:
+		return p.parseDefStmt()
+	default:
+		return nil
+	}
+}
+
+func (p *Parser) parseDefStmt() ast.Statement {
+
+	stmt := &ast.DefStatement{Token: p.currentToken}
+
+	if !p.expectToken(token.IDENT) {
+		p.errors = append(p.errors, fmt.Sprintf("%s:%d unexpected token %s at pos %d. expected def identifier.", p.lex.FileName, p.currentToken.Line, p.currentToken.Column))
+	}
+
+	stmt.Name = &ast.Identifier{Token: p.currentToken, Value: p.currentToken.Literal}
+
+	if !p.expectToken(token.ASSIGN) {
+		p.errors = append(p.errors, fmt.Sprintf("%s:%d unexpected token %s at pos %d. expected assign token", p.lex.FileName, p.currentToken.Line, p.currentToken.Column))
+	}
+
+	p.nextToken()
+
+	expression := []token.Token{}
+
+	for p.currentToken.Type != token.SEMICOLON {
+		expression = append(expression, p.currentToken)
+		p.nextToken()
+	}
+
+	return stmt
+}
+
+func (p *Parser) parseFunctionStmt() ast.Statement {
 	return nil
+}
+
+func (p *Parser) parseIfStmt() ast.Statement {
+	return nil
+}
+
+func (p *Parser) parseElseStmt() ast.Statement {
+	return nil
+}
+
+func (p *Parser) expectToken(tok token.TokenType) bool {
+
+	if p.peekToken.Type == tok {
+		p.nextToken()
+		return true
+	}
+	return false
+
 }
