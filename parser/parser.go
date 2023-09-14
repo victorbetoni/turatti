@@ -14,13 +14,20 @@ type Parser struct {
 	errors       []string
 }
 
+func (p *Parser) Errors() []string {
+	return p.errors
+}
+
 func (p *Parser) nextToken() {
 	p.currentToken = p.peekToken
 	p.peekToken = p.lex.NextToken()
 }
 
 func New(lex *lexer.Lexer) *Parser {
-	p := &Parser{lex: lex}
+	p := &Parser{
+		lex:    lex,
+		errors: []string{},
+	}
 	p.nextToken()
 	p.nextToken()
 	return p
@@ -60,14 +67,13 @@ func (p *Parser) parseDefStmt() ast.Statement {
 	stmt := &ast.DefStatement{Token: p.currentToken}
 
 	if !p.expectToken(token.IDENT) {
-		p.errors = append(p.errors, fmt.Sprintf("%s:%d unexpected token %s at pos %d. expected def identifier.", p.lex.FileName, p.currentToken.Line, p.currentToken.Column))
+		p.peekError(token.IDENT, p.peekToken, p.lex.FileName)
 	}
 
 	stmt.Name = &ast.Identifier{Token: p.currentToken, Value: p.currentToken.Literal}
 
 	if !p.expectToken(token.ASSIGN) {
 		p.peekError(token.ASSIGN, p.peekToken, p.lex.FileName)
-		p.errors = append(p.errors, fmt.Sprintf("%s:%d unexpected token %s at pos %d. expected assign token", p.lex.FileName, p.currentToken.Line, p.currentToken.Column))
 	}
 
 	p.nextToken()
