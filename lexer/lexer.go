@@ -3,6 +3,7 @@ package lexer
 import (
 	"io"
 	"os"
+	"strings"
 	"turatti/token"
 )
 
@@ -27,6 +28,9 @@ func New(input string) *Lexer {
 }
 
 func FromFile(file *os.File) *Lexer {
+	if !strings.HasSuffix(file.Name(), ".trt") {
+		return &Lexer{}
+	}
 	if result, err := io.ReadAll(file); err == nil {
 		lexer := &Lexer{
 			input:         string(result),
