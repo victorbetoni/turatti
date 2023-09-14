@@ -52,7 +52,9 @@ func (p *Parser) Parse() *ast.Program {
 func (p *Parser) parseStatement() ast.Statement {
 	switch p.currentToken.Type {
 	case token.DEF:
-		return p.parseDefStmt()
+		return p.parseDefStatement()
+	case token.RETURN:
+		return p.parseReturnStatement()
 	case token.IF:
 		return nil
 	case token.ELSE:
@@ -62,7 +64,7 @@ func (p *Parser) parseStatement() ast.Statement {
 	}
 }
 
-func (p *Parser) parseDefStmt() ast.Statement {
+func (p *Parser) parseDefStatement() ast.Statement {
 
 	stmt := &ast.DefStatement{Token: p.currentToken}
 
@@ -90,16 +92,18 @@ func (p *Parser) parseDefStmt() ast.Statement {
 	return stmt
 }
 
-func (p *Parser) parseFunctionStmt() ast.Statement {
-	return nil
-}
+func (p *Parser) parseReturnStatement() ast.Statement {
+	stmt := &ast.DefStatement{Token: p.currentToken}
 
-func (p *Parser) parseIfStmt() ast.Statement {
-	return nil
-}
+	p.nextToken()
 
-func (p *Parser) parseElseStmt() ast.Statement {
-	return nil
+	expression := []token.Token{}
+	for p.currentToken.Type != token.SEMICOLON {
+		expression = append(expression, p.currentToken)
+		p.nextToken()
+	}
+
+	return stmt
 }
 
 func (p *Parser) expectToken(tok token.TokenType) bool {

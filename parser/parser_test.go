@@ -60,6 +60,36 @@ func TestDefStatement(t *testing.T) {
 
 }
 
+func TestReturnStatement(t *testing.T) {
+
+	f, err := os.Open("../test_files/test_def_stmt.trt")
+	if err != nil {
+		t.Error("couldn't open def statement test file")
+		return
+	}
+
+	lex := lexer.FromFile(f)
+	parser := New(lex)
+
+	program := parser.Parse()
+	checkParserErrors(t, parser)
+	if len(program.Statements) != 3 {
+		t.Fatalf("program.Statements does not contain 3 statements. got=%d",
+			len(program.Statements))
+	}
+	for _, stmt := range program.Statements {
+		returnStmt, ok := stmt.(*ast.ReturnStatement)
+		if !ok {
+			t.Errorf("%T is not assignable from ast.ReturnStatement", stmt)
+			return
+		}
+		if returnStmt.TokenLiteral() != "return" {
+			t.Errorf("TokenLiteral not 'return', got %q", returnStmt.TokenLiteral())
+			return
+		}
+	}
+}
+
 func checkParserErrors(t *testing.T, p *Parser) {
 	errors := p.Errors()
 	if len(errors) == 0 {

@@ -44,15 +44,13 @@ type DefStatement struct {
 	Value Expression
 }
 
-func (ls *DefStatement) statementNode() {}
+func (ls *DefStatement) statementNode()       {}
+func (ls *DefStatement) TokenLiteral() string { return ls.Token.Literal }
 
-func (ls *DefStatement) TokenLiteral() string {
-	return ls.Token.Literal
+type ReturnStatement struct {
+	Token       token.Token
+	ReturnValue Expression
 }
 
-type IfStatement struct {
-	Token token.Token
-	Value Expression
-}
-
-func (ls *IfStatement) statementNode() {}
+func (rs *ReturnStatement) statementNode()       {}
+func (rs *ReturnStatement) TokenLiteral() string { return rs.Token.Literal }
