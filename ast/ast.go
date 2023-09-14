@@ -38,14 +38,14 @@ func (i *Identifier) TokenLiteral() string {
 	return i.Token.Literal
 }
 
-type LetStatement struct {
+type DefStatement struct {
 	Token token.Token
 	Name  *Identifier
 	Value Expression
 }
 
-func (ls *LetStatement) statementNode() {}
+func (ls *DefStatement) statementNode() {}
 
-func (ls *LetStatement) TokenLiteral() string {
+func (ls *DefStatement) TokenLiteral() string {
 	return ls.Token.Literal
 }
