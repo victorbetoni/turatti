@@ -7,11 +7,37 @@ import (
 	"turatti/token"
 )
 
+const (
+	_      int = iota
+	LOWEST     // lowest precedence
+	EQUALS
+	LESSGREATER
+	SUM
+	PRODUCT
+	PREFIX
+	CALL // highest precedence
+)
+
+type (
+	prefixParser func() ast.Expression
+	infixParser  func(ast.Expression) ast.Expression
+)
+
 type Parser struct {
-	lex          *lexer.Lexer
-	currentToken token.Token
-	peekToken    token.Token
-	errors       []string
+	lex           *lexer.Lexer
+	currentToken  token.Token
+	peekToken     token.Token
+	errors        []string
+	prefixParsers map[token.TokenType]prefixParser
+	infixParsers  map[token.TokenType]infixParser
+}
+
+func (p *Parser) registerPrefixParser(token token.TokenType, parser prefixParser) {
+	p.prefixParsers[token] = parser
+}
+
+func (p *Parser) registerInfixParser(token token.TokenType, parser infixParser) {
+	p.infixParsers[token] = parser
 }
 
 func (p *Parser) Errors() []string {
@@ -25,12 +51,19 @@ func (p *Parser) nextToken() {
 
 func New(lex *lexer.Lexer) *Parser {
 	p := &Parser{
-		lex:    lex,
-		errors: []string{},
+		lex:           lex,
+		errors:        []string{},
+		prefixParsers: make(map[token.TokenType]prefixParser),
+		infixParsers:  make(map[token.TokenType]infixParser),
 	}
 	p.nextToken()
 	p.nextToken()
+	p.registerPrefixParser(token.IDENT, p.parseIdentifier)
 	return p
+}
+
+func (p *Parser) parseIdentifier() ast.Expression {
+	return &ast.Identifier{Token: p.currentToken, Value: p.currentToken.Literal}
 }
 
 func (p *Parser) Parse() *ast.Program {
@@ -55,13 +88,18 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseDefStatement()
 	case token.RETURN:
 		return p.parseReturnStatement()
-	case token.IF:
-		return nil
-	case token.ELSE:
-		return nil
 	default:
 		return nil
 	}
+}
+
+func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
+	smt := &ast.ExpressionStatement{Token: p.currentToken}
+	smt.Expression = p.parseExpression(LOWEST)
+	if p.peekToken.Type == token.SEMICOLON {
+		p.nextToken()
+	}
+	return smt
 }
 
 func (p *Parser) parseDefStatement() ast.Statement {
@@ -104,6 +142,15 @@ func (p *Parser) parseReturnStatement() ast.Statement {
 	}
 
 	return stmt
+}
+
+func (p *Parser) parseExpression(precedence int) ast.Expression {
+	prefixParser := p.prefixParsers[p.currentToken.Type]
+	if prefixParser == nil {
+		return nil
+	}
+	leftExpression := prefixParser()
+	return leftExpression
 }
 
 func (p *Parser) expectToken(tok token.TokenType) bool {

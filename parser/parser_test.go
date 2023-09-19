@@ -90,6 +90,35 @@ func TestReturnStatement(t *testing.T) {
 	}
 }
 
+func TestIdentifier(t *testing.T) {
+	psr := New(lexer.New("foo;"))
+	program := psr.Parse()
+	checkParserErrors(t, psr)
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("expected 1 statement, got %d", len(program.Statements))
+	}
+
+	smt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("first statement is not assignable from ExpressionStatement. got %T", program.Statements[0])
+	}
+
+	identifier, ok := smt.Expression.(*ast.Identifier)
+	if !ok {
+		t.Fatalf("expression is not assignable from Identifier. got %T", smt)
+	}
+
+	if identifier.Value != "foo" {
+		t.Errorf("identifier value is not %s. got %s", "foo", identifier.Value)
+	}
+
+	if identifier.TokenLiteral() != "foo" {
+		t.Errorf("identifier token literal is not %s. got %s", "foo", identifier.TokenLiteral())
+	}
+
+}
+
 func checkParserErrors(t *testing.T, p *Parser) {
 	errors := p.Errors()
 	if len(errors) == 0 {
