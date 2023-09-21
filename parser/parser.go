@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strconv"
 	"turatti/ast"
 	"turatti/lexer"
 	"turatti/token"
@@ -56,14 +57,28 @@ func New(lex *lexer.Lexer) *Parser {
 		prefixParsers: make(map[token.TokenType]prefixParser),
 		infixParsers:  make(map[token.TokenType]infixParser),
 	}
+
 	p.nextToken()
 	p.nextToken()
+
 	p.registerPrefixParser(token.IDENT, p.parseIdentifier)
+	p.registerPrefixParser(token.INT, p.parseIntegerLiteral)
 	return p
 }
 
 func (p *Parser) parseIdentifier() ast.Expression {
 	return &ast.Identifier{Token: p.currentToken, Value: p.currentToken.Literal}
+}
+
+func (p *Parser) parseIntegerLiteral() ast.Expression {
+	literal := &ast.IntegerLiteral{Token: p.currentToken}
+	value, err := strconv.ParseInt(p.currentToken.Literal, 0, 64)
+	if err != nil {
+		p.errors = append(p.errors, fmt.Sprintf("couldnt parse %q as integer", p.currentToken.Literal))
+		return nil
+	}
+	literal.Value = value
+	return literal
 }
 
 func (p *Parser) Parse() *ast.Program {
